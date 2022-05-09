@@ -40,6 +40,7 @@ type Input struct {
 	artifactServerPort    string
 	jsonLogger            bool
 	noSkipCheckout        bool
+	gitProxy              string
 }
 
 func (i *Input) resolve(path string) string {

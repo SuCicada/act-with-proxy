@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -100,6 +101,15 @@ func (sc *StepContext) Executor(ctx context.Context) common.Executor {
 		}
 
 		actionDir := fmt.Sprintf("%s/%s", rc.ActionCacheDir(), strings.ReplaceAll(step.Uses, "/", "-"))
+		if proxyUrlStr, ok := rc.Env["GIT_PROXY"]; ok && proxyUrlStr != "" {
+			if proxyUrl, err := url.Parse(proxyUrlStr); err == nil {
+				log.Info("use git proxy " + proxyUrlStr)
+				common.InstallGitProxyClient(proxyUrl)
+			} else {
+				log.Error(err)
+				return nil
+			}
+		}
 		gitClone := common.NewGitCloneExecutor(common.NewGitCloneExecutorInput{
 			URL:   remoteAction.CloneURL(),
 			Ref:   remoteAction.Ref,

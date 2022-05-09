@@ -2,15 +2,21 @@ package common
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
+	"github.com/go-git/go-git/v5/plumbing/transport/client"
+	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"io"
 	"io/ioutil"
+	nethttp "net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
@@ -402,4 +408,26 @@ func NewGitCloneExecutor(input NewGitCloneExecutorInput) Executor {
 		logger.Debugf("Checked out %s", input.Ref)
 		return nil
 	}
+}
+
+// InstallGitProxyClient from github.com/go-git/go-git/v5/_examples/custom_http/main.go
+func InstallGitProxyClient(proxyUrl *url.URL) {
+	customClient := &nethttp.Client{
+		// accept any certificate (might be useful for testing)
+		Transport: &nethttp.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			Proxy:           nethttp.ProxyURL(proxyUrl),
+		},
+
+		// 15 second timeout
+		Timeout: 30 * time.Second,
+
+		// don't follow redirect
+		//CheckRedirect: func(req *nethttp.Request, via []*nethttp.Request) error {
+		//	return nethttp.ErrUseLastResponse
+		//},
+	}
+	newGitClient := githttp.NewClient(customClient)
+	client.InstallProtocol("http", newGitClient)
+	client.InstallProtocol("https", newGitClient)
 }
