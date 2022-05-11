@@ -418,10 +418,7 @@ func InstallGitProxyClient(proxyUrl *url.URL) {
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 			Proxy:           nethttp.ProxyURL(proxyUrl),
 		},
-
-		// 15 second timeout
-		Timeout: 30 * time.Second,
-
+		Timeout: 5 * 60 * time.Second,
 		// don't follow redirect
 		//CheckRedirect: func(req *nethttp.Request, via []*nethttp.Request) error {
 		//	return nethttp.ErrUseLastResponse
